@@ -17,12 +17,32 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import numpy as np
 
 
+def makeGaussian(size, fwhm=5, center=None):
+    """ Make a square gaussian kernel.
+
+    size is the length of a side of the square
+    fwhm is full-width-half-maximum, which
+    can be thought of as an effective radius.
+    """
+
+    x = np.arange(0, size, 1, float)
+    y = x[:,np.newaxis]
+
+    if center is None:
+        x0 = y0 = size // 2
+    else:
+        x0 = center[0]
+        y0 = center[1]
+
+    return np.exp(-4*np.log(2) * ((x-x0)**2 + (y-y0)**2) / fwhm**2)
+
 fig = plt.figure()
 ax = fig.gca(projection='3d')
 
 # Make data.
-X = np.arange(-5, 5, 0.25)
-Y = np.arange(-5, 5, 0.25)
+X, Y = np.hsplit(makeGaussian(100), 2)
+#X = np.arange(-5, 5, 0.25)
+#Y = np.arange(-5, 5, 0.25)
 X, Y = np.meshgrid(X, Y)
 R = np.sqrt(X**2 + Y**2)
 Z = np.sin(R)

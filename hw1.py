@@ -42,16 +42,9 @@ def main(args):
     assert(xs.shape[0] == ys.shape[0])
     
     xs_fi = np.matrix(preprocess(xs, args.basis, args.deg))
-    w = sgd(xs_fi, ys, np.zeros((xs_fi.shape[1], 1)))
+    w = train_sgd(xs_fi, ys, np.zeros((xs_fi.shape[1], 1)))
     plotModel_1d(xs_fi, ys, w)
- 
-    #model = MLELinearRegressor(X_features.shape[1], 1)
-    #model.train(X_features, Ys) 
-
-    # Test
-    #result = model.test(X_features, Ys)
-    #print result
-    
+  
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
