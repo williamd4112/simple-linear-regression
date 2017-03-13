@@ -19,13 +19,19 @@ class LossFunction(object):
 
 class MLEFunction(LossFunction):
     def __init__(self):
-        super(LossFunction, self).__init__()
-
-    def eval(self, x, y, w):
-        return x * w  - y
+        super(MLEFunction, self).__init__()
 
     def gradient(self, x, y, w):
-        return x.T * self.eval(x, y, w) / len(x)
+        return x.T * (x * w - y) / 2
+
+class MAPFunction(MLEFunction):
+    def __init__(self, alpha=0.01):
+        super(MAPFunction, self).__init__()
+        self.alpha = alpha
+
+    def gradient(self, x, y, w):
+        return super(MAPFunction, self).gradient(x, y, w) + self.alpha * w / len(x)
+
 
 class Optimizer(object):
     def minimize(self, j):
@@ -76,10 +82,10 @@ def preprocess(xs, basis):
     if basis == 'poly':
         return PolynomialFeatures(1).fit_transform(xs)
     elif basis == 'gaussian':
-        xs_normalize = np.matrix((xs))
-        idx, means, dist = kmeans(xs_normalize, 40)
+        xs_normalize = np.matrix(whiten(xs))
+        idx, means, dist = kmeans(xs_normalize, 128)
         sigmas = uniform_sigma(dist, [len(means), len(xs_normalize[0])])
-        return gaussian_basis(xs_normalize, means, sigmas)
+        return np.hstack((gaussian_basis(xs_normalize, means, sigmas), np.ones([len(xs), 1])))
     elif basis == 'sigmoid':
         raise NotImplementedError()
 
@@ -99,21 +105,23 @@ def gaussian_basis(xs, means, sigmas):
     for i in xrange(len(phi_x)):
         phi_x[i] = gaussian_kernel(xs[i], means, sigmas)
     return phi_x     
+
+def score(ys, ys_):
+    return np.sum(np.asarray(ys - ys_)**2) / (2 * len(ys))
              
 def loss(xs, ys, w):
     return np.sum(np.asarray((xs * w) - ys)**2) / (2 * len(xs))
 
-def train_sgd(xs, ys, w, lr=0.0001, batch_size=1, max_epochs=100000, max_iter=100000, verbose=False):
+def train_sgd(J, xs, ys, w, lr=0.0001, batch_size=1, max_epochs=100000, max_iter=100000, verbose=False):
     N = len(xs) 
     M = batch_size
-    J = MLEFunction()
     optimizer = SGDOptimizer(lr=lr, batch_size=batch_size, max_iter=max_iter)
 
     last_mse = 0
     for epoch in xrange(max_epochs):
         w = optimizer.minimize(J, xs, ys, w)
         mse = loss(xs, ys, w)
-        if epoch % 10 == 0:
+        if epoch % 1 == 0:
             print 'Epoch %d: training loss = %f' % (epoch, mse)
 
         if np.abs(last_mse - mse) <= 1e-8:

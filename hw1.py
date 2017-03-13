@@ -7,11 +7,9 @@ from sklearn.model_selection import KFold
 from matplotlib import pyplot as plt
 
 from common import *
+from plot import *
 
-def plotModel_1d(x, x_phi, y, w):
-    plt.plot(x[:], y, "x")
-    plt.plot(x[:], x_phi * w, "r-")
-    plt.show()
+from sklearn import linear_model
 
 def main(args): 
     xs, ys = load_dataset(args.X, args.Y)
@@ -23,15 +21,25 @@ def main(args):
     xs_phi = np.matrix(preprocess(xs, args.basis))
     xs_phi_train, ys_train = xs_phi[:N_train], ys[:N_train]
     xs_phi_test, ys_test = xs_phi[-N_test:], ys[-N_test:]
-    
+
+    print xs_phi.shape    
+
     K = args.K
     kf = KFold(n_splits=args.K)
     
     w_best = None
     loss_min = 1e9
 
+    # Select objective function
+    if args.algo == 'ml':
+        J = MLEFunction()
+    elif args.algo == 'map':
+        J = MAPFunction()
+    else:   
+        raise NotImplementedError() 
+    
     for train_index, validation_index in kf.split(xs_phi_train):
-        w = train_sgd(xs_phi_train[train_index], ys_train[train_index], np.random.normal(0, 0.25, [xs_phi_train.shape[1], 1]), lr=0.0001, batch_size=1, max_epochs=args.epoch)
+        w = train_sgd(J, xs_phi_train[train_index], ys_train[train_index], np.random.normal(0, 1.0, [xs_phi_train.shape[1], 1]), lr=1e-6, batch_size=1, max_epochs=args.epoch)
         loss_ = loss(xs_phi_train[validation_index], ys_train[validation_index], w)
         print 'Validation loss = %f' % loss_
         
@@ -39,10 +47,28 @@ def main(args):
             w_best = w
             loss_min = loss
 
-    loss_ = loss(xs_phi_test, ys_test, w_best)
-    print 'Test loss = %f' % loss_  
+    loss_ = score(xs_phi_test * w_best, ys_test)
+    print 'Test loss = %f' % loss_      
 
-    #plotModel_1d(xs, xs_fi, ys, w)
+    def model(x):
+        return x * w     
+
+    '''
+    regr = linear_model.Ridge()
+    regr.fit(xs_phi_train, ys_train)
+
+    loss_ = score(regr.predict(xs_phi_test), ys_test)
+    print 'Test loss = %f' % loss_      
+
+    def model(x):
+        return regr.predict(x)
+    '''
+
+    def phi(x):
+        return preprocess(x, args.basis)
+
+    plot_3d(model, phi, 0, 1081, 0, 1081)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
