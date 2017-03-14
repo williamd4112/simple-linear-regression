@@ -10,6 +10,11 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 
 import numpy as np
 
+def plot_1d(x, y, t):
+    plt.plot(x[:], t, "x")
+    plt.plot(x[:], y, "r-")
+    plt.show()
+
 def plot_2d_hist(x1, x2, bins=10):
     plt.hist2d(x1, x2, bins=10, norm=LogNorm())
     plt.colorbar()

@@ -10,10 +10,14 @@ import numpy as np
 # data generation
 #data = vstack((rand(150,2) + array([.5,.5]),rand(150,2)))
 data, _ = load_dataset(sys.argv[1], sys.argv[2])
-
+data = np.asarray(data)
 # computing K-Means with K = 2 (2 clusters)
-K = 10
-centroids,_ = kmeans(data, K)
+K = 128
+print data.shape
+data_ = data[data[:, 0] > 350]
+data_ = data_[data_[:, 1] > 300]
+print data.shape
+centroids,_ = kmeans(data_, K)
 # assign each sample to a cluster
 idx,_ = vq(data,centroids)
 

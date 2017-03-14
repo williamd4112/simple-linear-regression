@@ -7,6 +7,8 @@ from scipy.cluster.vq import kmeans as _kmeans
 from scipy.cluster.vq import vq, whiten
 from sklearn.preprocessing import PolynomialFeatures
 
+from preprocess import Preprocessor
+
 class LossFunction(object):
     def __init__(self):
         pass
@@ -55,10 +57,11 @@ class SGDOptimizer(GradientDescentOptimizer):
         N = len(x)
         M = self.batch_size
         count = 0
+        batch_indices = range(N)
         for i in xrange(0, N, M):
             i_end = max(i+M, N)
-            x_batch = x[i:i_end]
-            y_batch = y[i:i_end]
+            x_batch = x[batch_indices[i:i_end]]
+            y_batch = y[batch_indices[i:i_end]]
             w = super(SGDOptimizer, self).minimize(j, x_batch, y_batch, w)
 
             count += 1
@@ -82,10 +85,20 @@ def preprocess(xs, basis):
     if basis == 'poly':
         return PolynomialFeatures(1).fit_transform(xs)
     elif basis == 'gaussian':
-        xs_normalize = np.matrix(whiten(xs))
-        idx, means, dist = kmeans(xs_normalize, 128)
+        '''
+        #xs_normalize = np.matrix(whiten(xs))
+        
+        xs_normalize = xs / 1081.0
+        xs_normalize_filtered = np.asarray(xs_normalize)
+        #xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 0] > 0.323774283]
+        #xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 1] > 0.370027752]
+        #xs_normalize_filtered = whiten(xs_normalize_filtered)
+        
+        idx, means, dist = kmeans(xs_normalize_filtered, 256)
         sigmas = uniform_sigma(dist, [len(means), len(xs_normalize[0])])
-        return np.hstack((gaussian_basis(xs_normalize, means, sigmas), np.ones([len(xs), 1])))
+        return (np.hstack((gaussian_basis(xs_normalize, means, sigmas), np.ones([len(xs), 1]))))
+        '''
+        return np.matrix(Preprocessor().gaussian(np.asarray(xs), 128))
     elif basis == 'sigmoid':
         raise NotImplementedError()
 
@@ -124,7 +137,7 @@ def train_sgd(J, xs, ys, w, lr=0.0001, batch_size=1, max_epochs=100000, max_iter
         if epoch % 1 == 0:
             print 'Epoch %d: training loss = %f' % (epoch, mse)
 
-        if np.abs(last_mse - mse) <= 1e-8:
+        if np.abs(last_mse - mse) <= 1e-5:
             print 'Early stop'
             break                
         last_mse = mse

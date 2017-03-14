@@ -39,14 +39,14 @@ def main(args):
         raise NotImplementedError() 
     
     for train_index, validation_index in kf.split(xs_phi_train):
-        w = train_sgd(J, xs_phi_train[train_index], ys_train[train_index], np.random.normal(0, 1.0, [xs_phi_train.shape[1], 1]), lr=1e-6, batch_size=1, max_epochs=args.epoch)
+        w = train_sgd(J, xs_phi_train[train_index], ys_train[train_index], np.random.normal(0, 1.0, [xs_phi_train.shape[1], 1]), lr=1e-4, batch_size=1, max_epochs=args.epoch)
         loss_ = loss(xs_phi_train[validation_index], ys_train[validation_index], w)
         print 'Validation loss = %f' % loss_
         
         if loss_ < loss_min or w_best is None:
             w_best = w
             loss_min = loss
-
+        break
     loss_ = score(xs_phi_test * w_best, ys_test)
     print 'Test loss = %f' % loss_      
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     parser.add_argument('--algo', help='algorithm to perform',
             choices=['ml', 'map', 'bayes'], default='ml')
     parser.add_argument('--basis', help='basis function to perform',
-            choices=['poly', 'gaussian', 'sigmoid', 'custom'], default='poly')
+            choices=['poly', 'gaussian', 'sigmoid', 'custom'], default='gaussian')
 
     args = parser.parse_args()
     main(args)
