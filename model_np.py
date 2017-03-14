@@ -6,10 +6,11 @@ def mse(ys, ts):
 class LinearModel(object):
     def __init__(self, shape, lr=1e-6):
         self.lr = lr
-        self.w = np.zeros(shape)
+        self.w = np.zeros(shape).T
     
     def _optimize(self, x_batch, t_batch):
-        self.w = self.w - self.lr * x_batch.T * (x_batch * self.w - t_batch) / 2.0
+        grad = self.lr * (x_batch.T * (x_batch * self.w - t_batch)) / 2.0
+        self.w = self.w - grad
 
     def fit(self, x_, t_, epochs=1000, batch_size=1):
         N = len(x_) 
@@ -18,16 +19,15 @@ class LinearModel(object):
         for epoch in xrange(epochs):
             batch_indices = range(N)
             loss = 0
+            np.random.shuffle(batch_indices)
             for i in xrange(0, N, M):
                 i_end = max(i+M, N)
                 x_batch = x_[batch_indices[i:i_end]]
                 t_batch = t_[batch_indices[i:i_end]]
 
                 self._optimize(x_batch, t_batch)
-                
-                y_batch = x_batch * self.w 
-                loss = mse(y_batch, t_batch)         
-
+            
+            loss = self.eval(x_, t_)        
             if epoch % 1 == 0:
                 print 'Epoch %d: training loss = %f' % (epoch, loss)
 
@@ -36,6 +36,15 @@ class LinearModel(object):
 
     def eval(self, x_, t_):
         return mse(self.test(x_), t_)         
+
+class RidgeLinearModel(LinearModel):
+    def __init__(self, shape, lr=1e-6, lamb=1e-5):
+        super(RidgeLinearModel, self).__init__(shape, lr)
+        self.lamb = lamb
+    
+    def _optimize(self, x_batch, t_batch):
+        self.w = self.w - self.lr * (x_batch.T * (x_batch * self.w - t_batch)) / 2.0 + 2 * self.lamb * self.w 
+ 
 
 
 if __name__ == '__main__':

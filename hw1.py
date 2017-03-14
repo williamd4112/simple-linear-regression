@@ -59,10 +59,10 @@ def main(args):
 
     loss_ = score(regr.predict(xs_phi_test), ys_test)
     print 'Test loss = %f' % loss_      
-
-    def model(x):
-        return regr.predict(x)
-    '''
+    ''';
+    #def model(x):
+    #    return regr.predict(x)
+    
 
     def phi(x):
         return preprocess(x, args.basis)

@@ -1,4 +1,5 @@
 from model_np import LinearModel
+from model_np import RidgeLinearModel
 from util import load_dataset_csv
 from plot import plot_3d
 from preprocess import Preprocessor
@@ -17,7 +18,7 @@ def main(args):
         return np.matrix(Preprocessor().gaussian(x, deg))
 
     xs, ys = load_dataset_csv(args.X, args.Y)
-     
+    
     n = len(xs)
     n_train = int(0.8 * n)
 
@@ -28,7 +29,7 @@ def main(args):
     phi_xs = phi(xs)
     phi_xs_train, ys_train = phi_xs[:n_train], ys[:n_train]
     phi_xs_test, ys_test = phi_xs[n_train:], ys[n_train:]
- 
+    
     print('Training...')
     K = args.K
     kf = KFold(n_splits=args.K)
@@ -36,13 +37,12 @@ def main(args):
     model_best = None
     min_loss = 1e9
     
-    model = LinearModel((len(phi_xs_train[0]),), lr=0.5) 
     for train_index, validation_index in kf.split(phi_xs_train):
+        model = RidgeLinearModel(phi_xs_train[0].shape, lr=1e-4) 
         model.fit(phi_xs_train[train_index], ys_train[train_index], epochs=10, batch_size=1)
+
         loss = model.eval(phi_xs_train[validation_index], ys_train[validation_index])
-
         print('Validation loss = %f' % loss)
-
         if loss < min_loss:
             model_best = model
             min_loss = loss
@@ -50,11 +50,9 @@ def main(args):
     loss = model_best.eval(phi_xs_test, ys_test)
     print('Test loss = %f' % loss)
  
-
     def f(x):
         return np.round(np.clip(model_best.test(x), 0, 1081))
     
-
     print('Plotting...')
     plot_3d(f, phi, 0, 1081, 0, 1081)
      
