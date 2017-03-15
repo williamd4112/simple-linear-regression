@@ -20,7 +20,7 @@ def plot_2d_hist(x1, x2, bins=10):
     plt.colorbar()
     plt.show()
 
-def plot_3d(model, phi, x_min, x_max, y_min, y_max):
+def plot_3d(model, phi, x_min, x_max, y_min, y_max, filename=None):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
@@ -44,6 +44,6 @@ def plot_3d(model, phi, x_min, x_max, y_min, y_max):
 
     # Add a color bar which maps values to colors.
     fig.colorbar(surf, shrink=0.5, aspect=5)
-
+    
     plt.show()
 

@@ -63,14 +63,21 @@ def main(args):
     preprocessor = Preprocessor()
     xs_n = preprocessor.normalize(xs, rng)
     xs_n_filtered = xs_n
+    
+    if args.craft:
+        xs_n_filtered = filter_data(xs_n_filtered)
+    
     logging.info('Computing means and sigmas (%s)...' % args.pre)
     means, sigmas = get_means_sigmas(args, xs_n_filtered)
+
+    if args.craft:
+        means, sigmas = crafted_gaussian_feature(means, sigmas)
 
     def phi(x):
         pre = Preprocessor()
         return pre.gaussian(pre.normalize(x, rng), means, sigmas)
     
-    logging.info('Preprocessing... (d = %d)' % means.shape[0])
+    logging.info('Preprocessing... (d = %d; craft-feature %d)' % (means.shape[0], args.craft))
     phi_xs = phi(xs)
     phi_xs_train, ys_train = phi_xs[:n_train], ys[:n_train]
     phi_xs_test, ys_test = phi_xs[n_train:], ys[n_train:]
@@ -106,13 +113,12 @@ def main(args):
             return np.round(np.clip(model.test(sess, x), args.min, args.max))
 
         if args.plot:
-            logging.info('Plotting...')
-            plot_3d(f, phi, args.min, args.max, args.min, args.max)
+            logging.info('Plotting... (output = %s)' % args.fig)
+            plot_3d(f, phi, args.min, args.max, args.min, args.max, args.fig)
      
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--plot', help='enable plot', type=bool, default=False)
     parser.add_argument('--X', help='data', required=True, type=str)
     parser.add_argument('--Y', help='ground truth', required=True, type=str)
     parser.add_argument('--K', help='k-fold', type=int, default=3)
@@ -135,8 +141,9 @@ if __name__ == '__main__':
             choices=['kmeans', 'grid'], default='grid')
     parser.add_argument('--optimizer', help='optimzier',
             choices=['ls', 'seq'], default='ls')
-
-
+    parser.add_argument('--plot', help='enable plot', type=bool, default=False)
+    parser.add_argument('--craft', help='enable crafted features', type=bool, default=False)
+    parser.add_argument('--fig', help='figure output', type=str, default=None)
 
     args = parser.parse_args()
 
