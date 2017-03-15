@@ -22,16 +22,8 @@ class Preprocessor(object):
 
     def compute_gaussian_basis(self, xs_normalize, deg=4):
         xs_normalize_filtered = xs_normalize
-        xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 0] > 0.183774283]
-        xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 0] < 0.84]
-        xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 1] > 0.220027752]
-
         idx, means, dist = kmeans(xs_normalize_filtered, deg)
         sigmas = np.ones([len(means), len(xs_normalize[0])]) * (dist * 2.5)
-
-        # Hand design basis
-        means = np.vstack((means, [0.13876, 0.508788159], [0.46253469, 0.092506938], [0.6475, 0.185]))
-        sigmas = np.vstack((sigmas, [0.285, 0.5], [0.5, 0.285], [0.2, 0.1]))
         
         return means, sigmas
         
