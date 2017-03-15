@@ -1,8 +1,6 @@
 import numpy as np
 import tensorflow as tf
 
-from util import pinv
-
 class LinearModel(object):
     def __init__(self, shape, optimizer='seq', lr=0.01, clip_min=0, clip_max=1081, is_round=True):
         '''
@@ -198,18 +196,10 @@ if __name__ == '__main__':
 
     phi_xs = Preprocessor().polynomial(xs)
    
-    sess = None
     model = BayesianLinearModel((2,), m0=0.0, s0=2.0, beta=1/0.2**2)
-    model.fit(sess, phi_xs, ys)
-    print model.eval(sess, phi_xs[N_train:], ys[N_train:])
-    pred = model.test(sess, phi_xs)
-    plot_1d(xs, pred, ys)
-
-'''
     with tf.Session() as sess:
         model.fit(sess, phi_xs[:N_train], ys[:N_train])
         print model.eval(sess, phi_xs[N_train:], ys[N_train:])
         pred = model.test(sess, phi_xs)
         plot_1d(xs, pred, ys)
-'''    
         

@@ -5,7 +5,7 @@ from model_tf import BayesianLinearModel
 from preprocess import Preprocessor
 
 from util import load_dataset_csv
-from plot import plot_3d
+from plot import plot_3d, plot_2d_map
 
 import numpy as np
 import tensorflow as tf
@@ -114,7 +114,8 @@ def main(args):
 
         if args.plot:
             logging.info('Plotting... (output = %s)' % args.fig)
-            plot_3d(f, phi, args.min, args.max, args.min, args.max, args.fig)
+            #plot_3d(f, phi, args.min, args.max, args.min, args.max, args.fig)
+            plot_2d_map(f, phi, args.min, args.max, args.min, args.max)
      
 
 if __name__ == '__main__':

@@ -5,16 +5,6 @@ import csv
 
 import tensorflow as tf
 
-def pinv(a):
-    c = 1e-9
-    at = (a)
-    s, u, v = tf.svd(at)
-
-    # To avoid divide 0
-    s = tf.diag(s) + tf.constant(np.identity(at.get_shape()[1], dtype=np.float32) * c)
-    inv_s = tf.constant(np.identity(at.get_shape()[1], dtype=np.float32)) / 2
-    return tf.matmul(v, tf.matmul(inv_s, tf.transpose(u)))
-
 def generate_1d_dataset(N, variance=100):
     X = np.matrix(range(N)).T + 1
     Y = np.matrix([random.random() * variance + i * 10 + 900 for i in range(len(X))]).T
