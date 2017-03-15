@@ -1,5 +1,6 @@
 from model_tf import LinearModel
 from model_tf import RidgeLinearModel
+from model_tf import BayesianLinearModel
 
 from preprocess import Preprocessor
 
@@ -39,11 +40,12 @@ def get_model(args, shape):
         return LinearModel(shape, lr=args.lr)
     elif args.model == 'map':
         return RidgeLinearModel(shape, lr=args.lr, alpha=args.alpha)
+    elif args.model == 'bayes':
+        return BayesianLinearModel(shape, m0=args.m0, s0=args.s0, beta=args.beta)
 
 def main(args): 
     print('Loading data...')
     xs, ys, n = load_data(args.X, args.Y, shuffle=True)
-
     n_train = int(args.frac * n)
     
     print('Preprocessing...')
@@ -72,7 +74,6 @@ def main(args):
     min_loss = 1e9
      
     LR = args.lr
-    #model = RidgeLinearModel((len(phi_xs_train[0]),), lr=LR, alpha=ALPHA)
     model = get_model(args, (len(phi_xs_train[0]),))
     print('Using model %s' % args.model)
     with tf.Session() as sess: 
@@ -111,7 +112,10 @@ if __name__ == '__main__':
     parser.add_argument('--min', help='minimum value of input space', type=float, default=0)
     parser.add_argument('--max', help='maximum value of input space', type=float, default=1081)
     parser.add_argument('--frac', help='fraction of training', type=float, default=0.8)
-    parser.add_argument('--alpha', help='l2 penalty scale', type=float, default=0.01)
+    parser.add_argument('--alpha', help='l2 penalty scale for map', type=float, default=0.01)
+    parser.add_argument('--beta', help='beta (noise variance) for bayesian', type=float, default=1.0 / 0.2**2)
+    parser.add_argument('--m0', help='m0 (mean) for bayesian', type=float, default=0.0)
+    parser.add_argument('--s0', help='s0 (variance) for bayesian', type=float, default=2.0)
     parser.add_argument('--model', help='model',
             choices=['ml', 'map', 'bayes'], default='ml')
 
