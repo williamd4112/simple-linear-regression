@@ -4,7 +4,7 @@ import tensorflow as tf
 from util import pinv
 
 class LinearModel(object):
-    def __init__(self, shape, optimizer='sgd', lr=0.01, clip_min=0, clip_max=1081, is_round=True):
+    def __init__(self, shape, optimizer='seq', lr=0.01, clip_min=0, clip_max=1081, is_round=True):
         '''
         param shape: phi_x shape
         '''
@@ -41,7 +41,7 @@ class LinearModel(object):
         sess.run(self.w_assign_op, feed_dict={self.w_assign: w})         
 
     def fit(self, sess, x_, t_, epoch=10, batch_size=1):
-        if self.optimizer == 'sgd':
+        if self.optimizer == 'seq':
             batch_indices = range(len(x_))
             for epoch in xrange(epoch):
                 np.random.shuffle(batch_indices)
@@ -70,7 +70,7 @@ class LinearModel(object):
         '''        
 
     def _setup_optimizer(self): 
-        if self.optimizer == 'sgd':
+        if self.optimizer == 'seq':
             self.optimize_op = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
         else:
             # W_ml is calculated with solving normal equation
@@ -88,7 +88,7 @@ class LinearModel(object):
          
 
 class RidgeLinearModel(LinearModel):
-    def __init__(self, shape, optimizer='sgd', alpha=0.01, mean=0.0, var=0.8, lr=0.01, clip_min=0, clip_max=1081, is_round=True):
+    def __init__(self, shape, optimizer='seq', alpha=0.01, mean=0.0, var=0.8, lr=0.01, clip_min=0, clip_max=1081, is_round=True):
         self.alpha = alpha
         self.mean = mean
         self.var = var
@@ -102,7 +102,7 @@ class RidgeLinearModel(LinearModel):
         self.optimize_op = tf.train.AdamOptimizer(self.lr).minimize(self.ridge_loss) 
 
 class BayesianLinearModel(LinearModel):
-    def __init__(self, shape, m0, s0, beta, optimizer='sgd', clip_min=0, clip_max=1081, is_round=True):
+    def __init__(self, shape, m0, s0, beta, optimizer='ls', clip_min=0, clip_max=1081, is_round=True):
         # Setup mean vector
         if np.isscalar(m0):
             self.m0 = tf.ones(shape + (1,), dtype=tf.float32) * m0
@@ -119,10 +119,7 @@ class BayesianLinearModel(LinearModel):
         self.beta = beta
         
         super(BayesianLinearModel, self).__init__(shape, optimizer, 0.0, clip_min, clip_max, is_round)
-
-    def fit(self, sess, x_, t_, epoch=10, batch_size=1):
-        self._optimize(sess, x_, t_)
-       
+ 
     def _setup_model(self):
         # Setup mn, sn
         xt = tf.transpose(self.x)
@@ -133,7 +130,7 @@ class BayesianLinearModel(LinearModel):
         self.optimize_op = tf.assign(self.w, self.mn)
 '''
 class BayesianLinearModel(LinearModel):
-    def __init__(self, shape, m0, s0, beta, optimizer='sgd', clip_min=0, clip_max=1081, is_round=True):
+    def __init__(self, shape, m0, s0, beta, optimizer='seq', clip_min=0, clip_max=1081, is_round=True):
         self.w = np.zeros(shape + (1,))
 
         if np.isscalar(m0):

@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.matlib
+import tensorflow as tf
 import csv
 
 from numpy import vstack,array
@@ -20,10 +21,20 @@ class Preprocessor(object):
     def normalize(self, X, rng):
         return X / rng
 
-    def compute_gaussian_basis(self, xs_normalize, deg=4):
+    def grid2d_means(self, x_min, x_max, y_min, y_max, step=0.1, deg=4, scale=2.5):
+        X = np.arange(x_min, x_max, step)
+        Y = np.arange(y_min, y_max, step)
+        X, Y = np.meshgrid(X, Y) 
+    
+        X, Y = np.reshape(X, len(X)**2), np.reshape(Y, len(Y)**2)
+        means = np.array([X, Y], dtype=np.float32).T
+        sigmas = np.ones([len(means), 2]) * (step * scale)
+        return means, sigmas
+
+    def compute_gaussian_basis(self, xs_normalize, deg=4, scale=2.5):
         xs_normalize_filtered = xs_normalize
         idx, means, dist = kmeans(xs_normalize_filtered, deg)
-        sigmas = np.ones([len(means), len(xs_normalize[0])]) * (dist * 2.5)
+        sigmas = np.ones([len(means), len(xs_normalize[0])]) * (dist * scale)
         
         return means, sigmas
         
@@ -39,3 +50,8 @@ class Preprocessor(object):
             phi_x[:, i] = np.exp(-np.sum((np.square(X - mean) / (2 * np.square(sigma))), axis=1))
         
         return np.hstack((np.ones([n, 1]), phi_x))
+ 
+if __name__ == '__main__':
+    means, sigmas = Preprocessor().grid2d_means(0, 1081, 0, 1081, step=25)
+    print means.shape, sigmas.shape
+
