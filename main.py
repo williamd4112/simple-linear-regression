@@ -43,6 +43,7 @@ def get_model(args, shape):
     elif args.model == 'map':
         return RidgeLinearModel(shape, optimizer=args.optimizer, lr=args.lr, alpha=args.alpha)
     elif args.model == 'bayes':
+        logging.info('Bayes hyperparameters [m0: %f, s0: %f]' % (args.m0, args.s0))
         return BayesianLinearModel(shape, optimizer=args.optimizer, m0=args.m0, s0=args.s0, beta=args.beta)
 
 def get_means_sigmas(args, x):
@@ -91,7 +92,7 @@ def main(args):
      
     LR = args.lr
     model = get_model(args, (len(phi_xs_train[0]),))
-    logging.info('Using model %s (plot = %d)' % (args.model, args.plot))
+    logging.info('Using model %s (plot = %s)' % (args.model, args.plot))
     with tf.Session() as sess: 
         for train_index, validation_index in kf.split(phi_xs_train):
             sess.run(tf.global_variables_initializer())
@@ -112,10 +113,12 @@ def main(args):
         def f(x):
             return np.round(np.clip(model.test(sess, x), args.min, args.max))
 
-        if args.plot:
+        if args.plot is not None:
             logging.info('Plotting... (output = %s)' % args.fig)
-            #plot_3d(f, phi, args.min, args.max, args.min, args.max, args.fig)
-            plot_2d_map(f, phi, args.min, args.max, args.min, args.max)
+            if args.plot == '3d':
+                plot_3d(f, phi, args.min, args.max, args.min, args.max, args.fig)
+            elif args.plot == '2d':
+                plot_2d_map(f, phi, args.min, args.max, args.min, args.max)
      
 
 if __name__ == '__main__':
@@ -142,7 +145,7 @@ if __name__ == '__main__':
             choices=['kmeans', 'grid'], default='grid')
     parser.add_argument('--optimizer', help='optimzier',
             choices=['ls', 'seq'], default='ls')
-    parser.add_argument('--plot', help='enable plot', type=bool, default=False)
+    parser.add_argument('--plot', help='enable plot', type=str, default=None)
     parser.add_argument('--craft', help='enable crafted features', type=bool, default=False)
     parser.add_argument('--fig', help='figure output', type=str, default=None)
 

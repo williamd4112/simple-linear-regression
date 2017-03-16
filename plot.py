@@ -21,8 +21,8 @@ def plot_2d_hist(x1, x2, bins=10):
     plt.show()
 
 def plot_2d_map(model, phi, x_min, x_max, y_min, y_max):
-    X = np.arange(x_min, x_max, 5)
-    Y = np.arange(y_min, y_max, 5)
+    X = np.arange(x_min, x_max, 3)
+    Y = np.arange(y_min, y_max, 3)
     X, Y = np.meshgrid(X, Y)
     
     X_flat, Y_flat = np.reshape(X.T, len(X)**2), np.reshape(Y.T, len(Y)**2) 
