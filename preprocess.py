@@ -25,8 +25,8 @@ class Preprocessor(object):
         X = np.arange(x_min, x_max, step)
         Y = np.arange(y_min, y_max, step)
         X, Y = np.meshgrid(X, Y) 
-    
-        X, Y = np.reshape(X, len(X)**2), np.reshape(Y, len(Y)**2)
+        
+        X, Y = X.flatten(), Y.flatten()
         means = np.array([X, Y], dtype=np.float32).T
         sigmas = np.ones([len(means), 2]) * (step * scale)
         return means, sigmas

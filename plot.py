@@ -21,8 +21,8 @@ def plot_2d_hist(x1, x2, bins=10):
     plt.show()
 
 def plot_2d_map(model, phi, x_min, x_max, y_min, y_max):
-    X = np.arange(x_min, x_max, 3)
-    Y = np.arange(y_min, y_max, 3)
+    X = np.arange(x_min, x_max, 5)
+    Y = np.arange(y_min, y_max, 5)
     X, Y = np.meshgrid(X, Y)
     
     X_flat, Y_flat = np.reshape(X.T, len(X)**2), np.reshape(Y.T, len(Y)**2) 
@@ -35,7 +35,7 @@ def plot_2d_map(model, phi, x_min, x_max, y_min, y_max):
     plt.colorbar()
     plt.show()
 
-def plot_3d(model, phi, x_min, x_max, y_min, y_max, filename=None):
+def plot_3d(model, phi, x_min, x_max, y_min, y_max, z_min, z_max, filename=None):
     fig = plt.figure()
     ax = fig.gca(projection='3d')
 
@@ -53,7 +53,7 @@ def plot_3d(model, phi, x_min, x_max, y_min, y_max, filename=None):
                            linewidth=0, antialiased=False, shade=True)
 
     # Customize the z axis.
-    ax.set_zlim(0, 1081)
+    ax.set_zlim(z_min, z_max)
     ax.zaxis.set_major_locator(LinearLocator(10))
     ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 

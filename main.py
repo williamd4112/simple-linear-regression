@@ -25,22 +25,29 @@ def load_data(x_path, y_path, shuffle=True):
 
     return xs, ys, n
 
+'''
+    Filter noise data
+'''
 def filter_data(x):
     xs_normalize_filtered = x
-    xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 0] > 0.183774283]
-    xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 0] < 0.84]
-    xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 1] > 0.220027752]
+    xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 0] > 0.23774283]
+    xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 0] < 0.89]
+    xs_normalize_filtered = xs_normalize_filtered[xs_normalize_filtered[:, 1] > 0.120027752]
     return xs_normalize_filtered
 
+'''
+    Place additional gaussian basis
+'''
 def crafted_gaussian_feature(means, sigmas):
     means = np.vstack((means, [0.13876, 0.508788159], [0.46253469, 0.092506938], [0.6475, 0.185]))
-    sigmas = np.vstack((sigmas, [0.285, 0.5], [0.5, 0.285], [0.2, 0.1]))
+    sigmas = np.vstack((sigmas, [0.285, 0.3], [0.5, 0.285], [0.2, 0.1]))
     return means, sigmas
 
 def get_model(args, shape):
     if args.model == 'ml':
         return LinearModel(shape, optimizer=args.optimizer, lr=args.lr)
     elif args.model == 'map':
+        logging.info('MAP hyperparameters [alpha: %f]' % args.alpha)
         return RidgeLinearModel(shape, optimizer=args.optimizer, lr=args.lr, alpha=args.alpha)
     elif args.model == 'bayes':
         logging.info('Bayes hyperparameters [m0: %f, s0: %f]' % (args.m0, args.s0))
@@ -50,7 +57,7 @@ def get_means_sigmas(args, x):
     if args.pre == 'kmeans':
         return Preprocessor().compute_gaussian_basis(x, deg=args.d, scale=args.scale)
     elif args.pre == 'grid':
-        return Preprocessor().grid2d_means(0, 1.0, 0, 1.0, step=args.gsize, scale=args.scale)
+        return Preprocessor().grid2d_means(np.min(x[:,0]), np.max(x[:,0]) , np.min(x[:,1]), np.max(x[:,1]), step=args.gsize, scale=args.scale)
 
 def main(args):
     logging.basicConfig(format='[%(asctime)s] %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
