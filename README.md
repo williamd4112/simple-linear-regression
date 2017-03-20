@@ -10,9 +10,9 @@ All hyperparameters in the scripts are set to optimal settings.
 
 # To train with cross validation
 ```
-./train_bayes_cross_validation "{list of m0}" "{list of s0}" "{list of beta}" "{list of d}"
-./train_ml_cross_validation "{list of epoch}" "{list of batch size}" "{list of learning rate}" "{list of d}"
-./train_map_cross_validation "{list of epoch}" "{list of batch size}" "{list of learning rate}" "{list of d}" "{list of alpha}"
+./train_bayes_cross_validation.sh "{list of m0}" "{list of s0}" "{list of beta}" "{list of d}"
+./train_ml_cross_validation.sh "{list of epoch}" "{list of batch size}" "{list of learning rate}" "{list of d}"
+./train_map_cross_validation.sh "{list of epoch}" "{list of batch size}" "{list of learning rate}" "{list of d}" "{list of alpha}"
 
 NOTE: parameter 'd' depends on the pre-preprocessing method defined in script.
 pre=grid: grid cell size
