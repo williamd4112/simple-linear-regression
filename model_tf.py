@@ -1,6 +1,9 @@
 import numpy as np
 import tensorflow as tf
 
+from sklearn.model_selection import KFold
+import logging
+
 class LinearModel(object):
     def __init__(self, shape, optimizer='seq', lr=0.01, clip_min=0, clip_max=1081, is_round=True):
         '''
@@ -21,7 +24,7 @@ class LinearModel(object):
         self.w_assign_op = tf.assign(self.w, self.w_assign)
         
         # y is Nx1 column vector
-        self.y = (tf.matmul(self.x, self.w))
+        self.y = tf.matmul(self.x, self.w)
 
         # MSE evaluation
         self.loss = tf.reduce_mean(tf.pow(self.y - self.t, 2)) / 2.0
@@ -36,7 +39,20 @@ class LinearModel(object):
         return sess.run(self.w)
     
     def set_weight(self, sess, w):
-        sess.run(self.w_assign_op, feed_dict={self.w_assign: w})         
+        sess.run(self.w_assign_op, feed_dict={self.w_assign: w})
+
+    def save(sess):
+        self.w_save = self.get_weight(sess)
+   
+    def save_to_file(self, sess, filename):
+        np.save(filename, self.get_weight(sess))
+    
+    def load(sess):
+        self.set_weight(sess, self.w_save)
+
+    def load_from_file(self, sess, filename):
+        w = np.load(filename)
+        self.set_weight(sess, w)
 
     def fit(self, sess, x_, t_, epoch=10, batch_size=1):
         if self.optimizer == 'seq':
@@ -49,7 +65,7 @@ class LinearModel(object):
                     loss = self.eval(sess, x_, t_)
                  
                 if epoch % 1 == 0:
-                    print 'Epoch %d: training loss = %f' % (epoch, loss)
+                    logging.info('Epoch %d: training loss = %f' % (epoch, loss))
         else:
             self._optimize(sess, x_, t_)
 
@@ -126,6 +142,51 @@ class BayesianLinearModel(LinearModel):
 
     def _setup_optimizer(self):
         self.optimize_op = tf.assign(self.w, self.mn)
+
+class ModelTrainer(object):
+    def __init__(self, model_name, model_phi):
+        self.model_name = model_name
+        self.model_phi = model_phi
+
+    def get_model(self, cfg, shape):
+        if self.model_name == 'ml':
+            return LinearModel(shape, optimizer=cfg['optimizer'], lr=cfg['lr'])
+        elif self.model_name == 'map':
+            logging.info('MAP hyperparameters [alpha: %f]' % cfg['alpha'])
+            return RidgeLinearModel(shape, optimizer=cfg['optimizer'], lr=cfg['lr'], alpha=cfg['alpha'])
+        elif self.model_name == 'bayes':
+            logging.info('Bayes hyperparameters [m0: %f, s0: %f]' % (cfg['m0'], cfg['s0']))
+            return BayesianLinearModel(shape, optimizer=cfg['optimizer'], m0=cfg['m0'], s0=cfg['s0'], beta=cfg['beta'])
+ 
+    def train_cross_validation(self, sess, X, Y, n_train, K, cfg):
+        # Preprocess data
+        phi_xs = self.model_phi(X)
+        phi_xs_train, ys_train = phi_xs[:n_train], Y[:n_train]
+
+        kf = KFold(n_splits=K)
+
+        # Init model
+        model = self.get_model(cfg, (len(phi_xs_train[0]),))
+
+        logging.info('Model [%s]' % self.model_name)        
+
+        # Train with K-fold
+        model_mean_loss = 0
+        for train_index, validation_index in kf.split(X):
+            print train_index, phi_xs_train.shape, X.shape
+            sess.run(tf.global_variables_initializer())
+            model.fit(sess, phi_xs_train[train_index], ys_train[train_index], epoch=cfg['epoch'], batch_size=cfg['batch_size'])
+            loss = model.eval(sess, phi_xs_train[validation_index], ys_train[validation_index])
+            
+            model_mean_loss += loss
+
+        # Calculate mean of validation loss
+        model_mean_loss /= float(K)
+
+        return model_mean_loss
+
+
+
 '''
 class BayesianLinearModel(LinearModel):
     def __init__(self, shape, m0, s0, beta, optimizer='seq', clip_min=0, clip_max=1081, is_round=True):
