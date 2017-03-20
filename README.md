@@ -1,3 +1,30 @@
+# Introduction
+Python Tensorflow implementation for three kinds of linear regression algorithm. (Maximum Likelihood, Maximum a posterior, Bayesian). This project aims to predict height map of south Taiwan and study the difference of these three kinds of linear regression algorithms. (Implementation detail mentioned in doc/report.pdf)
+
+# Results
+Minimumn Mean-square error (MSE) of three approaches
+
+| ML      | MAP          | Bayesian  |
+| ------------- |:-------------:| -----:|
+| 113.610847    | 135.456 | 49.576|
+
+# Visualization
+## Maximum Likelihood
+| 3D            | 2D           |
+| ------------- |:------------:|
+|![ml-3d](/doc/ml-3d.png)|![ml-2d](/doc/ml-2d.png)|
+
+## Maximum a Posterior
+| 3D            | 2D           |
+| ------------- |:------------:|
+|![map-3d](/doc/map-3d.png)|![map-2d](/doc/map-2d.png)|
+
+## Bayesian
+| 3D            | 2D           |
+| ------------- |:------------:|
+|![bayes-3d](/doc/bayes-3d.png)|![bayes-2d](/doc/bayes-2d.png)|
+
+
 # Dependencies
 - numpy
 - Tensorflow
