@@ -85,7 +85,7 @@ class LinearModel(object):
 
     def _setup_optimizer(self): 
         if self.optimizer == 'seq':
-            self.optimize_op = tf.train.AdamOptimizer(self.lr).minimize(self.loss)
+            self.optimize_op = tf.train.GradientDescentOptimizer(self.lr).minimize(self.loss)
         else:
             # W_ml is calculated with solving normal equation
             xt = tf.transpose(self.x)
