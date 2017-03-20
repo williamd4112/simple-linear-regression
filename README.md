@@ -1,3 +1,9 @@
+# Dependencies
+- numpy
+- Tensorflow
+- Scipy (kmeans)
+- Scikit-learn (k-fold)
+
 # To train the model
 ```
 ./train_bayes.sh {Fraction of training data}
