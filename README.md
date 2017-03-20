@@ -31,6 +31,20 @@ Minimumn Mean-square error (MSE) of three approaches
 - Scipy (kmeans)
 - Scikit-learn (k-fold)
 
+# To run pre-trained model
+```
+./test_bayes.sh {X} model/bayes/bayes.npy model/bayes/bayes-mean.npy model/bayes/bayes-sigma.npy {Y}
+./test_ml.sh {X} model/ml/ml.npy model/ml/ml-mean.npy model/ml/ml-sigma.npy {Y}
+./test_map.sh {X} model/map/map.npy model/map/map-mean.npy model/map/map-sigma.npy {Y}
+
+```
+Prediction results would be saved at {Y} (output path)
+
+# To score the predictions
+```
+python score.py {predictions}.csv {ground truth}.csv
+```
+
 # To train the model
 ```
 ./train_bayes.sh {Fraction of training data}
