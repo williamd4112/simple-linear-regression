@@ -24,9 +24,9 @@ The result of cross validation will be saved at log/{model description}
 
 # To test the model
 ```
-./test_bayes.sh {input data X} {model path} {model mean path} {model sigma path}
-./test_ml.sh {input data X} {model path} {model mean path} {model sigma path}
-./test_map.sh {input data X} {model path} {model mean path} {model sigma path}
+./test_bayes.sh {input data X} {model path} {model mean path} {model sigma path} {output path}
+./test_ml.sh {input data X} {model path} {model mean path} {model sigma path} {output path}
+./test_map.sh {input data X} {model path} {model mean path} {model sigma path} {output path}
 
 e.g. ./test_bayes.sh X_test.csv model/bayes-m0-0.0-s0-2.0-beta-25.0-grid-0.015.npy model/bayes-m0-0.0-s0-2.0-beta-25.0-grid-0.015-mean.npy model/bayes-m0-0.0-s0-2.0-beta-25.0-grid-0.015-sigma.npy
 ```
