@@ -7,9 +7,9 @@ SCALE=1.0
 MODEL=ml
 D=0.015
 
-epoch=10
+epoch=5
 batch_size=128
-lr=0.5
+lr=0.8
 
 OUTPUT="model/${MODEL}-epoch-${epoch}-${batch_size}-lr-${lr}-${PRE}-${D}"
 

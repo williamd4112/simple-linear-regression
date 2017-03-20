@@ -5,12 +5,12 @@ K=1
 OPTIMIZER=seq
 SCALE=1.0
 MODEL=map
-D=0.1
+D=0.015
 
-epoch=10
+epoch=5
 batch_size=128
-lr=0.5
-alpha=0.1
+lr=0.8
+alpha=0.000001
 
 OUTPUT="model/${MODEL}-epoch-${epoch}-${batch_size}-lr-${lr}-${PRE}-${D}"
 
