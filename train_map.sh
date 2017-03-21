@@ -3,9 +3,9 @@ X=data/X_train.csv
 Y=data/T_train.csv
 K=1
 OPTIMIZER=seq
-SCALE=1.0
+SCALE=0.75
 MODEL=map
-D=0.015
+D=0.012
 
 epoch=50
 batch_size=1

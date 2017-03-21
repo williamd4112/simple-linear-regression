@@ -11,6 +11,7 @@ class LinearModel(object):
         self.optimizer = optimizer
         self.lr = lr
         self.shape = shape
+        self.learning_rate_decay = 0.99
         
         # w is Mx1 column vector
         self.w = np.asmatrix(self._init_weight(shape + (1,)))
@@ -53,7 +54,7 @@ class LinearModel(object):
            
                 if epoch % 1 == 0:
                     logging.info('Epoch %d: training loss = %f (lr = %f)' % (epoch, loss, lr))
-                lr = lr * 0.99
+                lr = lr * self.learning_rate_decay
         else:
             self._optimize(sess, x_, t_)
 

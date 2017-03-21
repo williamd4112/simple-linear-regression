@@ -5,7 +5,7 @@ K=1
 OPTIMIZER=ls
 SCALE=0.75
 MODEL=bayes
-D=0.015
+D=0.012
 
 m0=0.0
 s0=2.0

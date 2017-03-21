@@ -5,7 +5,7 @@ K=1
 OPTIMIZER=seq
 SCALE=1.0
 MODEL=ml
-D=0.015
+D=0.012
 
 epoch=50
 batch_size=1
