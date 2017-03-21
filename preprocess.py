@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.matlib
-import tensorflow as tf
 import csv
+from tqdm import *
 
 from numpy import vstack,array
 from numpy.random import rand
@@ -43,7 +43,7 @@ class Preprocessor(object):
         m = len(means)
         phi_x = np.zeros([n, m])
 
-        for i in xrange(m):
+        for i in tqdm(range(m)):
             mean = np.matlib.repmat(means[i], n, 1)
             sigma = np.matlib.repmat(sigmas[i], n, 1)
            

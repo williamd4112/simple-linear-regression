@@ -7,13 +7,13 @@ SCALE=1.0
 MODEL=ml
 D=0.015
 
-epoch=5
-batch_size=128
-lr=0.8
+epoch=50
+batch_size=1
+lr=0.05
 
 OUTPUT="model/${MODEL}-epoch-${epoch}-${batch_size}-lr-${lr}-${PRE}-${D}"
 
 FRAC=$1
 
-python main.py --task train --X $X --Y $Y  --K $K --model $MODEL --pre $PRE --gsize $D --d $D --optimizer $OPTIMIZER --scale $SCALE --frac $FRAC --epoch $epoch --batch_size $batch_size --lr $lr --output $OUTPUT --plot 2d
+python main.py --task train --X $X --Y $Y  --K $K --model $MODEL --pre $PRE --gsize $D --d $D --optimizer $OPTIMIZER --scale $SCALE --frac $FRAC --epoch $epoch --batch_size $batch_size --lr $lr --output $OUTPUT 
 

@@ -1,6 +1,8 @@
 import numpy as np
 import tensorflow as tf
 
+from tqdm import *
+
 from sklearn.model_selection import KFold
 import logging
 
@@ -11,6 +13,7 @@ class LinearModel(object):
         '''
         self.optimizer = optimizer
         self.lr = lr
+        self.shape = shape
 
         # x is NxM matrix
         self.x = tf.placeholder(tf.float32, shape=(None,) + shape)
@@ -59,8 +62,8 @@ class LinearModel(object):
             batch_indices = range(len(x_))
             for epoch in xrange(epoch):
                 np.random.shuffle(batch_indices)
-                for i in xrange(0, len(x_), batch_size):
-                    i_ = max(i, len(x_))
+                for i in tqdm(range(0, len(x_), batch_size)):
+                    i_ = min(i + batch_size, len(x_))
                     self._optimize(sess, x_[batch_indices[i:i_]], t_[batch_indices[i:i_]])
                     loss = self.eval(sess, x_, t_)
                  
@@ -74,6 +77,9 @@ class LinearModel(object):
                                               self.t: t_})
     def test(self, sess, x_):
         return sess.run(self.y, feed_dict={self.x: x_})
+
+    def reset(self, sess):
+        self.set_weight(sess, self._init_weight(self.shape + (1,)),)
 
     def _init_weight(self, shape):
         return np.zeros(shape)
@@ -143,124 +149,4 @@ class BayesianLinearModel(LinearModel):
     def _setup_optimizer(self):
         self.optimize_op = tf.assign(self.w, self.mn)
 
-class ModelTrainer(object):
-    def __init__(self, model_name, model_phi):
-        self.model_name = model_name
-        self.model_phi = model_phi
-
-    def get_model(self, cfg, shape):
-        if self.model_name == 'ml':
-            return LinearModel(shape, optimizer=cfg['optimizer'], lr=cfg['lr'])
-        elif self.model_name == 'map':
-            logging.info('MAP hyperparameters [alpha: %f]' % cfg['alpha'])
-            return RidgeLinearModel(shape, optimizer=cfg['optimizer'], lr=cfg['lr'], alpha=cfg['alpha'])
-        elif self.model_name == 'bayes':
-            logging.info('Bayes hyperparameters [m0: %f, s0: %f]' % (cfg['m0'], cfg['s0']))
-            return BayesianLinearModel(shape, optimizer=cfg['optimizer'], m0=cfg['m0'], s0=cfg['s0'], beta=cfg['beta'])
- 
-    def train_cross_validation(self, sess, X, Y, n_train, K, cfg):
-        # Preprocess data
-        phi_xs = self.model_phi(X)
-        phi_xs_train, ys_train = phi_xs[:n_train], Y[:n_train]
-
-        kf = KFold(n_splits=K)
-
-        # Init model
-        model = self.get_model(cfg, (len(phi_xs_train[0]),))
-
-        logging.info('Model [%s]' % self.model_name)        
-
-        # Train with K-fold
-        model_mean_loss = 0
-        for train_index, validation_index in kf.split(X):
-            print train_index, phi_xs_train.shape, X.shape
-            sess.run(tf.global_variables_initializer())
-            model.fit(sess, phi_xs_train[train_index], ys_train[train_index], epoch=cfg['epoch'], batch_size=cfg['batch_size'])
-            loss = model.eval(sess, phi_xs_train[validation_index], ys_train[validation_index])
-            
-            model_mean_loss += loss
-
-        # Calculate mean of validation loss
-        model_mean_loss /= float(K)
-
-        return model_mean_loss
-
-
-
-'''
-class BayesianLinearModel(LinearModel):
-    def __init__(self, shape, m0, s0, beta, optimizer='seq', clip_min=0, clip_max=1081, is_round=True):
-        self.w = np.zeros(shape + (1,))
-
-        if np.isscalar(m0):
-            self.m0 = np.ones(shape + (1,), dtype=np.float32) * m0
-        else:
-            self.m0 = m0
-        
-        if np.isscalar(s0):
-            self.s0 = 1.0 / s0 * np.identity(shape[0], dtype=np.float32)
-        else:
-            self.s0 = s0
-        print self.s0
-        self.mn = self.m0
-        self.sn = self.s0
-        self.beta = beta
-
-        print 'w', self.w.shape
-        print 'm0', self.m0.shape
-        print 's0', self.s0.shape
-
-    def get_weight(self, sess):
-        return self.w
-
-    def set_weight(self, sess, w):
-        self.w = w
-
-    def _optimize(self, sess, x_, t_):
-        x_mat = np.asmatrix(x_)
-        t_mat = np.asmatrix(t_)
-        
-        self.sn = np.linalg.inv(np.linalg.inv(self.s0) + self.beta * (x_mat.T * x_mat))
-        self.mn = self.sn * (np.linalg.inv(self.s0) * self.m0 + self.beta * x_mat.T * t_mat)
-        self.s0 = self.sn
-        self.m0 = self.mn
-
-        self.w = self.mn
-
-    def fit(self, sess, x_, t_, epoch=10, batch_size=1):
-        batch_indices = range(len(x_))
-        for epoch in xrange(epoch):
-            np.random.shuffle(batch_indices)
-            for i in xrange(0, len(x_), batch_size):
-                i_ = max(i, len(x_))
-                self._optimize(sess, x_[batch_indices[i:i_]], t_[batch_indices[i:i_]])
-                loss = self.eval(sess, x_, t_)
-             
-            if epoch % 1 == 0:
-                print 'Epoch %d: training loss = %f' % (epoch, loss)
-
-    def eval(self, sess, x_, t_):
-        return np.sum((self.test(sess, x_) - np.asarray(t_))**2) / (2 * len(x_))
-
-    def test(self, sess, x_):
-        return np.asarray(np.asmatrix(x_) * np.asmatrix(self.w))
-'''    
-
-if __name__ == '__main__':
-    from preprocess import Preprocessor
-    from util import generate_1d_dataset
-    from plot import plot_1d
-
-    N = 100
-    N_train = int(0.2 * N)
-    xs, ys = generate_1d_dataset(N, variance=100)
-
-    phi_xs = Preprocessor().polynomial(xs)
-   
-    model = BayesianLinearModel((2,), m0=0.0, s0=2.0, beta=1/0.2**2)
-    with tf.Session() as sess:
-        model.fit(sess, phi_xs[:N_train], ys[:N_train])
-        print model.eval(sess, phi_xs[N_train:], ys[N_train:])
-        pred = model.test(sess, phi_xs)
-        plot_1d(xs, pred, ys)
-        
+       

@@ -7,10 +7,10 @@ SCALE=1.0
 MODEL=map
 D=0.015
 
-epoch=5
-batch_size=128
-lr=0.8
-alpha=0.000001
+epoch=50
+batch_size=1
+lr=0.05
+alpha=0.0001
 
 OUTPUT="model/${MODEL}-epoch-${epoch}-${batch_size}-lr-${lr}-${PRE}-${D}"
 

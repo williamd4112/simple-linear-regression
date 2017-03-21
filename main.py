@@ -1,5 +1,5 @@
-from model_tf import LinearModel
-from model_tf import RidgeLinearModel
+from model_np import LinearModel
+from model_np import RidgeLinearModel
 from model_tf import BayesianLinearModel
 
 from preprocess import Preprocessor
@@ -79,6 +79,8 @@ def train_cross_validation(args, sess, model, phi_xs_train, ys_train):
 
         logging.info('Validation loss = %f' % (loss))
         validation_loss += loss
+
+        model.reset(sess)
 
     return validation_loss / float(args.K)
 
