@@ -6,7 +6,7 @@ Minimumn Mean-square error (MSE) of three approaches
 
 | ML      | MAP          | Bayesian  |
 | ------------- |:-------------:| -----:|
-| 113.610847    | 135.456 | 49.576|
+| 90.525   | 88.585709 | 60.591061|
 
 # Visualization
 ## Maximum Likelihood
